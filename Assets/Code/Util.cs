@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Code {
     public class Util {
@@ -23,6 +18,17 @@ namespace Assets.Code {
         }
         public static Quaternion Damp(Quaternion source, Quaternion target, float smoothing, float dt) {
             return Quaternion.Lerp(source, target, 1 - Mathf.Pow(smoothing, dt));
+        }
+
+        public static int RangeOtherThan(int min, int max, int exclude) {
+            if (min == max - 1 && exclude == min) {
+                return exclude;
+            }
+            int output = exclude;
+            while (output == exclude) {
+                output = Random.Range(min, max);
+            }
+            return output;
         }
 
         
@@ -46,11 +52,12 @@ namespace Assets.Code {
             return false;
         }
         public static Vector3 GetWallrunNormal(GameObject go, Vector3 moveDirection, float height) {
+            moveDirection.Normalize();
             Vector3 position = go.transform.position;
             position.y += height;
             RaycastHit hitInfo;
-            Physics.Raycast(position, moveDirection.normalized, out hitInfo, PlayerScript.WALLRUN_CHECK_DISTANCE, layerMaskTerrain);
-            Debug.DrawLine(position, position + moveDirection.normalized * PlayerScript.WALLRUN_CHECK_DISTANCE, Color.white, 2);
+            Physics.Raycast(position, moveDirection, out hitInfo, PlayerScript.WALLRUN_CHECK_DISTANCE, layerMaskTerrain);
+            Debug.DrawLine(position, position + moveDirection * PlayerScript.WALLRUN_CHECK_DISTANCE, Color.white, 2);
             if (hitInfo.collider == null) {
                 return Vector3.zero;
             }

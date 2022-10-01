@@ -6,6 +6,9 @@ Shader "thquinn/SonarShader"
         _PingDistance ("Ping Distance", Float) = 0
         _PingAge ("Ping Age", Float) = 0
         _MaxPingAge ("Max Ping Age", Float) = 10
+        _FalloffMult ("Falloff Multiplier", Float) = .33
+        _FalloffExp ("Falloff Exponent", Float) = .33
+        _BackfaceMult ("Backface Multiplier", Float) = .33
     }
     SubShader
     {
@@ -37,6 +40,7 @@ Shader "thquinn/SonarShader"
 
             float3 _PingLocation;
             float _PingDistance, _PingAge, _MaxPingAge;
+            float _FalloffMult, _FalloffExp, _BackfaceMult;
 
             v2f vert (appdata v)
             {
@@ -46,9 +50,6 @@ Shader "thquinn/SonarShader"
                 return o;
             }
 
-            static const float _FalloffMult = .45;
-            static const float _FalloffPow = 1.5;
-            static const float _BackfaceMult = .33;
             static const float EXPIRATION_FADE_SECONDS = 1;
             static const float EXPIRATION_AGE = _MaxPingAge - EXPIRATION_FADE_SECONDS;
             static const float FADE_START_DISTANCE = 50;
@@ -59,7 +60,7 @@ Shader "thquinn/SonarShader"
                 float delta = distance - _PingDistance;
                 float f;
                 if (delta < 0) {
-                    f = _FalloffMult / pow(-delta, _FalloffPow);
+                    f = _FalloffMult / pow(-delta, _FalloffExp);
                 } else {
                     f = .01 / delta;
                 }

@@ -14,28 +14,36 @@ public class PlayerScript : MonoBehaviour
     static float JUMP_SPEED = 5;
     static float COYOTE_TIME = .33f;
     static float JUMP_DELAY = .2f;
+    static float WALLJUMP_HORIZONTAL_SPEED = 4;
+    static float WALLJUMP_VERTICAL_SPEED = 10;
     public static float WALLRUN_CHECK_DISTANCE = .85f;
-    public static float WALLRUN_INITIAL_VELOCITY = 2.5f;
-    public static float WALLRUN_INITIAL_FORCE = .2f;
-    public static float WALLRUN_FORCE_EXPONENT = 1.5f;
-    public static float WALLRUN_DURATION = 1.5f;
+    static float WALLRUN_INITIAL_VELOCITY = 2.5f;
+    static float WALLRUN_INITIAL_FORCE = .2f;
+    static float WALLRUN_FORCE_EXPONENT = 1.5f;
+    static float WALLRUN_DURATION = 1.5f;
+    static float WALLJUMP_COOLDOWN_TIMER = 1f;
     // Non-gameplay variables.
     static float PING_PITCH_DROP_FACTOR = .02f;
+    static float FOOTSTEP_RATE_MULTIPLIER = 3f;
 
     public Rigidbody rb;
     public Camera cam;
-    public Material sonarMaterial;
+    public Material sonarMaterial, goalMaterial;
     public AudioSource sfxPing, sfxSlide;
-    public AudioMixer mixerPing;
+    public AudioSource[] sfxSteps, sfxSoftSteps, sfxJumps, sfxLandings;
+    public AudioMixer mixerPing, mixerAmbience;
 
     bool jumped, isWallrunning;
-    float groundTimer, wallrunTimer;
+    float groundTimer, wallrunTimer, walljumpTimer;
     Vector3 pingLocation;
     float pingTimer, pingPitch;
+    float stepTimer = .5f;
+    int sfxStepLast, sfxSoftStepLast;
 
     void Start() {
         Cursor.lockState = CursorLockMode.Locked;
         sonarMaterial.SetFloat("_MaxPingAge", PING_PERIOD);
+        goalMaterial.SetFloat("_MaxPingAge", PING_PERIOD);
     }
 
     void Update() {
@@ -76,15 +84,19 @@ public class PlayerScript : MonoBehaviour
         if (groundTimer > 0 && !jumped && Input.GetButtonDown("Jump")) {
             jumped = true;
             groundTimer = -JUMP_DELAY;
+            sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
         }
     }
     void UpdateVelocity() {
+        float rawX = Input.GetAxisRaw("Horizontal");
+        float rawY = Input.GetAxisRaw("Vertical");
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
+        Vector3 inputVelocity = transform.forward * rawY * MOVE_SPEED + transform.right * rawX * MOVE_SPEED;
         Vector3 moveVelocity = transform.forward * y * MOVE_SPEED + transform.right * x * MOVE_SPEED;
         float moveMagnitude = moveVelocity.magnitude;
-        Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, moveVelocity, .5f);
-        isWallrunning = groundTimer <= 0 && moveVelocity.sqrMagnitude > 0 && wallrunNormal != Vector3.zero;
+        Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
+        isWallrunning = groundTimer <= 0 && walljumpTimer <= 0 && x != 0 && wallrunNormal != Vector3.zero;
         float yVelocity = rb.velocity.y;
         if (isWallrunning) {
             if (wallrunTimer == 0) {
@@ -100,11 +112,18 @@ public class PlayerScript : MonoBehaviour
             moveVelocity = moveVelocity.normalized * moveMagnitude;
             wallrunTimer += Time.fixedDeltaTime;
             sfxSlide.transform.localPosition = moveVelocity.normalized;
+            // Wall jumps.
+            if (Input.GetButtonDown("Jump")) {
+                moveVelocity = wallrunNormal * WALLJUMP_HORIZONTAL_SPEED;
+                yVelocity = WALLJUMP_VERTICAL_SPEED;
+                walljumpTimer = WALLJUMP_COOLDOWN_TIMER;
+            }
         } else if (jumped) {
             yVelocity = JUMP_SPEED;
         }
         jumped = false;
         rb.velocity = new Vector3(moveVelocity.x, yVelocity, moveVelocity.z);
+        walljumpTimer = Mathf.Max(0, walljumpTimer - Time.fixedDeltaTime);
     }
 
     void UpdateSonar() {
@@ -114,6 +133,9 @@ public class PlayerScript : MonoBehaviour
             sonarMaterial.SetVector("_PingLocation", transform.position);
             sonarMaterial.SetFloat("_PingDistance", 0);
             sonarMaterial.SetFloat("_PingAge", 0);
+            goalMaterial.SetVector("_PingLocation", transform.position);
+            goalMaterial.SetFloat("_PingDistance", 0);
+            goalMaterial.SetFloat("_PingAge", 0);
             pingTimer = 0;
             pingPitch = 1;
             pingLocation = transform.position;
@@ -124,6 +146,8 @@ public class PlayerScript : MonoBehaviour
             pingDistance = Mathf.Pow(pingTimer, PING_EXPONENT) * PING_SPEED;
             sonarMaterial.SetFloat("_PingDistance", pingDistance);
             sonarMaterial.SetFloat("_PingAge", pingTimer);
+            goalMaterial.SetFloat("_PingDistance", pingDistance);
+            goalMaterial.SetFloat("_PingAge", pingTimer);
         }
         float proximity = Mathf.Abs((cam.transform.position - pingLocation).magnitude - pingDistance);
         pingPitch -= Mathf.Sqrt(proximity * .1f) * PING_PITCH_DROP_FACTOR * Time.deltaTime;
@@ -136,6 +160,31 @@ public class PlayerScript : MonoBehaviour
         mixerPing.SetFloat("Flange_Wetmix", mixerEffectIntensity);
     }
     void UpdateSFX() {
-        sfxSlide.volume = Mathf.Clamp(sfxSlide.volume + (isWallrunning ? Time.deltaTime * 40 : Time.deltaTime * -10), 0, .75f);
+        if (groundTimer == COYOTE_TIME) {
+            float velocityPercent = rb.velocity.magnitude / MOVE_SPEED;
+            velocityPercent = Mathf.Pow(velocityPercent, .33f);
+            stepTimer += Time.deltaTime * velocityPercent * FOOTSTEP_RATE_MULTIPLIER;
+            if (stepTimer > 1) {
+                if (velocityPercent < .9f) {
+                    sfxSoftStepLast = Util.RangeOtherThan(0, sfxSoftSteps.Length, sfxSoftStepLast);
+                    sfxSoftSteps[sfxSoftStepLast].Play();
+                } else {
+                    sfxStepLast = Util.RangeOtherThan(0, sfxSteps.Length, sfxStepLast);
+                    sfxSteps[sfxStepLast].Play();
+                }
+                stepTimer = stepTimer % 1;
+            }
+        } else {
+            stepTimer = .5f;
+        }
+        sfxSlide.volume = Mathf.Clamp(sfxSlide.volume + (isWallrunning ? Time.deltaTime * 40 : Time.deltaTime * -10), 0, 1);
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.GetContact(0).normal.y > .9f) {
+            AudioSource sfx = sfxLandings[Random.Range(0, sfxLandings.Length)];
+            float volume = Mathf.Lerp(0, 1.2f, Mathf.Abs(collision.relativeVelocity.y) * .15f);
+            sfx.PlayOneShot(sfx.clip, volume);
+        }
     }
 }

@@ -7,13 +7,11 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FloaterMaterial
-  m_Shader: {fileID: 4800000, guid: 7df361dfbaad77942a2b76251c9d281d, type: 3}
+  m_Name: GoalMaterial
+  m_Shader: {fileID: 4800000, guid: 18ceb6116f5b45c49b6b628002808a5d, type: 3}
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _ALPHABLEND_ON
-  - _EMISSION
-  m_LightmapFlags: 0
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -60,26 +58,32 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.5
+    - _BackfaceMult: 0.1
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DstBlend: 10
+    - _DstBlend: 0
+    - _FalloffExp: 0.8
+    - _FalloffMult: 0.8
+    - _FalloffPow: 0.97
     - _GlossMapScale: 1
-    - _Glossiness: 0
+    - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _MaxPingAge: 10
     - _Metallic: 0
-    - _Mode: 2
+    - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _PingAge: 0.975074
+    - _PingDistance: 13.70282
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _Speed: 8
+    - _SrcBlend: 1
     - _UVSec: 0
-    - _ZWrite: 0
-    - s_Alpha: 0.5
+    - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
-    - _SpecularVector: {r: 0.69974625, g: 0.54786205, b: 0.4584692, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _PingLocation: {r: 4.4497766, g: 1.6113886, b: 183.7928, a: 0}
   m_BuildTextureStacks: []

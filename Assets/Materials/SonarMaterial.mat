@@ -63,7 +63,8 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FalloffMult: 0.6
+    - _FalloffExp: 1.5
+    - _FalloffMult: 0.45
     - _FalloffPow: 0.97
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -73,8 +74,8 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _PingAge: 8.118978
-    - _PingDistance: 83.0241
+    - _PingAge: 0.975074
+    - _PingDistance: 13.70282
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 8
@@ -84,5 +85,5 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _PingLocation: {r: 0, g: 0, b: 0, a: 0}
+    - _PingLocation: {r: 4.4497766, g: 1.6113886, b: 183.7928, a: 0}
   m_BuildTextureStacks: []
