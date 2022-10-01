@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class PlayerScript : MonoBehaviour
 {
     static float PING_PERIOD = 10;
-    static float PING_SPEED = 6;
-    static float PING_EXPONENT = 1.3f;
+    static float PING_SPEED = 13f;
+    static float PING_EXPONENT = .9f;
     static float MOVE_SPEED = 10;
     static float LOOK_SENSITIVITY = .4f;
     static float JUMP_SPEED = 5;
@@ -14,8 +15,12 @@ public class PlayerScript : MonoBehaviour
     public Rigidbody rb;
     public Camera cam;
     public Material sonarMaterial;
+    public AudioSource sfxPing;
+    public AudioMixer mixerPing;
 
     bool jumped;
+    Vector3 pingLocation;
+    float pingTimer;
 
     void Start() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -57,15 +62,28 @@ public class PlayerScript : MonoBehaviour
     }
 
     void UpdateSonar() {
+        float pingDistance = 0;
         if (Time.time == 0 || Time.time % PING_PERIOD < (Time.time - Time.deltaTime) % PING_PERIOD) {
             // New ping.
             sonarMaterial.SetVector("_PingLocation", transform.position);
             sonarMaterial.SetFloat("_PingDistance", 0);
             sonarMaterial.SetFloat("_PingAge", 0);
+            pingTimer = 0;
+            pingLocation = transform.position;
+            // Play SFX.
+            sfxPing.Play();
         } else {
-            float pingAge = sonarMaterial.GetFloat("_PingAge");
-            sonarMaterial.SetFloat("_PingDistance", Mathf.Pow(pingAge, PING_EXPONENT) * PING_SPEED);
-            sonarMaterial.SetFloat("_PingAge", pingAge + Time.deltaTime);
+            pingTimer += Time.deltaTime;
+            pingDistance = Mathf.Pow(pingTimer, PING_EXPONENT) * PING_SPEED;
+            sonarMaterial.SetFloat("_PingDistance", pingDistance);
+            sonarMaterial.SetFloat("_PingAge", pingTimer);
         }
+        float proximity = Mathf.Abs((cam.transform.position - pingLocation).magnitude - pingDistance);
+        float fadeFactor = Mathf.InverseLerp(PING_PERIOD - 2, PING_PERIOD, pingTimer);
+        mixerPing.SetFloat("Volume", Mathf.Pow(proximity, 1.25f) * -.5f + fadeFactor * -20);
+        float proximityAndTime = pingTimer * (1 / (proximity + 1));
+        float mixerEffectIntensity = proximityAndTime / (proximityAndTime + 1);
+        mixerPing.SetFloat("Flange_Drymix", 1 - mixerEffectIntensity);
+        mixerPing.SetFloat("Flange_Wetmix", mixerEffectIntensity);
     }
 }
