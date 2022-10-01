@@ -7,7 +7,7 @@ using UnityEngine.Audio;
 public class PlayerScript : MonoBehaviour
 {
     static float PING_PERIOD = 10;
-    static float PING_SPEED = 14f;
+    static float PING_SPEED = 14.5f;
     static float PING_EXPONENT = .85f;
     static float MOVE_SPEED = 10;
     static float MOVE_INERTIA = .1f;
@@ -31,15 +31,14 @@ public class PlayerScript : MonoBehaviour
 
     public Rigidbody rb;
     public Camera cam;
-    public Material sonarMaterial, goalMaterial;
-    public AudioSource sfxPing, sfxSlide;
+    public Material sonarMaterial;
+    public AudioSource sfxPing, sfxTwinkle, sfxSlide;
     public AudioSource[] sfxSteps, sfxSoftSteps, sfxJumps, sfxLandings;
     public AudioMixer mixerPing, mixerAmbience;
 
     bool isGrounded, jumped, walljumped, isWallrunning;
     float groundTimer, wallrunTimer, walljumpCooldown, walljumpCoyoteTime;
     Vector3 lastWallrunNormal;
-    Vector3 pingLocation;
     float pingTimer, pingPitch;
     float stepTimer = .5f;
     int sfxStepLast, sfxSoftStepLast;
@@ -47,7 +46,6 @@ public class PlayerScript : MonoBehaviour
     void Start() {
         Cursor.lockState = CursorLockMode.Locked;
         sonarMaterial.SetFloat("_MaxPingAge", PING_PERIOD);
-        goalMaterial.SetFloat("_MaxPingAge", PING_PERIOD);
     }
 
     void Update() {
@@ -104,15 +102,16 @@ public class PlayerScript : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
         Vector3 inputVelocity = transform.forward * y * MOVE_SPEED + transform.right * x * MOVE_SPEED;
-        float inertia;
+        Vector3 moveVelocity;
         if (walljumpCooldown > 0) {
-            inertia = WALLJUMP_INERTIA;
-        } else if (inputVelocity.sqrMagnitude == 0) {
-            inertia = STOP_INERTIA;
+            moveVelocity = Vector3.Lerp(rb.velocity, inputVelocity, WALLJUMP_INERTIA);
         } else {
-            inertia = MOVE_INERTIA;
+            moveVelocity = new Vector3(
+                Mathf.Lerp(rb.velocity.x, inputVelocity.x, inputVelocity.x == 0 ? STOP_INERTIA : MOVE_INERTIA),
+                rb.velocity.y,
+                Mathf.Lerp(rb.velocity.z, inputVelocity.z, inputVelocity.z == 0 ? STOP_INERTIA : MOVE_INERTIA)
+            );
         }
-        Vector3 moveVelocity = Vector3.Lerp(rb.velocity, inputVelocity, inertia);
         float moveMagnitude = moveVelocity.magnitude;
         Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
         isWallrunning = groundTimer <= 0 && walljumpCooldown <= 0 && x != 0 && wallrunNormal != Vector3.zero;
@@ -153,12 +152,8 @@ public class PlayerScript : MonoBehaviour
             sonarMaterial.SetVector("_PingLocation", transform.position);
             sonarMaterial.SetFloat("_PingDistance", 0);
             sonarMaterial.SetFloat("_PingAge", 0);
-            goalMaterial.SetVector("_PingLocation", transform.position);
-            goalMaterial.SetFloat("_PingDistance", 0);
-            goalMaterial.SetFloat("_PingAge", 0);
             pingTimer = 0;
             pingPitch = 1;
-            pingLocation = transform.position;
             // Play SFX.
             sfxPing.Play();
         } else {
@@ -166,14 +161,16 @@ public class PlayerScript : MonoBehaviour
             pingDistance = Mathf.Pow(pingTimer, PING_EXPONENT) * PING_SPEED;
             sonarMaterial.SetFloat("_PingDistance", pingDistance);
             sonarMaterial.SetFloat("_PingAge", pingTimer);
-            goalMaterial.SetFloat("_PingDistance", pingDistance);
-            goalMaterial.SetFloat("_PingAge", pingTimer);
         }
+        Vector3 pingLocation = sonarMaterial.GetVector("_PingLocation");
         float proximity = Mathf.Abs((cam.transform.position - pingLocation).magnitude - pingDistance);
         pingPitch -= Mathf.Sqrt(proximity * .1f) * PING_PITCH_DROP_FACTOR * Time.deltaTime;
         mixerPing.SetFloat("Pitch", pingPitch);
         float fadeFactor = Mathf.InverseLerp(PING_PERIOD - 2, PING_PERIOD, pingTimer);
-        mixerPing.SetFloat("Volume", Mathf.Pow(proximity, 1.25f) * -.5f + fadeFactor * -35);
+        float pingVolume = Mathf.Pow(proximity, 1.25f) * -.5f + fadeFactor * -35;
+        mixerPing.SetFloat("Volume", pingVolume);
+        float twinkleVolume = Mathf.Lerp(0f, .05f, Mathf.InverseLerp(0, -40, pingVolume));
+        sfxTwinkle.volume = Util.Damp(sfxTwinkle.volume, twinkleVolume, sfxTwinkle.volume < twinkleVolume ? .5f : .001f, Time.deltaTime);
         float proximityAndTime = pingTimer * (1 / (proximity + 1));
         float mixerEffectIntensity = proximityAndTime / (proximityAndTime + 1);
         mixerPing.SetFloat("Flange_Drymix", 1 - mixerEffectIntensity);

@@ -6,32 +6,30 @@ public class GoalScript : MonoBehaviour
 {
     public MeshRenderer meshRenderer;
 
-    public float f, f2;
-
     Vector3 originalPosition;
     MaterialPropertyBlock materialPropertyBlock;
 
-    Quaternion angularVelocity, angularAcceleration;
+    Quaternion angularVelocity, targetAngularVelocity;
 
     void Start() {
         originalPosition = transform.localPosition;
         materialPropertyBlock = new MaterialPropertyBlock();
         meshRenderer.GetPropertyBlock(materialPropertyBlock);
-        materialPropertyBlock.SetFloat("_Alpha", 1);
+        materialPropertyBlock.SetFloat("_Alpha", .66f);
         meshRenderer.SetPropertyBlock(materialPropertyBlock);
         angularVelocity = Random.rotation;
-        angularAcceleration = Random.rotation;
+        targetAngularVelocity = Random.rotation;
     }
 
     void Update() {
+        if (Input.GetKeyDown(KeyCode.R)) {
+            targetAngularVelocity = Random.rotation;
+        }
         transform.localPosition = originalPosition + new Vector3(0, Mathf.Sin(Time.time * 5 / Mathf.PI) * .25f, 0);
-        angularVelocity = Quaternion.Lerp(angularAcceleration, Quaternion.identity, f2) * angularVelocity;
-        angularVelocity = Quaternion.Lerp(angularVelocity, Quaternion.identity, f);
-        transform.localRotation *= angularVelocity;
+        angularVelocity = Quaternion.Lerp(angularVelocity, targetAngularVelocity, 0.005f);
+        transform.localRotation *= Quaternion.Lerp(Quaternion.identity, angularVelocity, .01f);
     }
     void FixedUpdate() {
-        if (Random.value < .01f) {
-            angularAcceleration = Random.rotation;
-        }
+
     }
 }
