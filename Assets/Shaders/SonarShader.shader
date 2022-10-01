@@ -6,9 +6,6 @@ Shader "thquinn/SonarShader"
         _PingDistance ("Ping Distance", Float) = 0
         _PingAge ("Ping Age", Float) = 0
         _MaxPingAge ("Max Ping Age", Float) = 10
-        _FalloffMult ("Falloff Multiplier", Float) = .5
-        _FalloffPow ("Falloff Exponent", Float) = .98
-        _BackfaceMult ("Backface Multiplier", Float) = .33
     }
     SubShader
     {
@@ -40,8 +37,6 @@ Shader "thquinn/SonarShader"
 
             float3 _PingLocation;
             float _PingDistance, _PingAge, _MaxPingAge;
-            float _FalloffMult, _FalloffPow;
-            float _BackfaceMult;
 
             v2f vert (appdata v)
             {
@@ -51,8 +46,13 @@ Shader "thquinn/SonarShader"
                 return o;
             }
 
+            static const float _FalloffMult = .45;
+            static const float _FalloffPow = 1.5;
+            static const float _BackfaceMult = .33;
             static const float EXPIRATION_FADE_SECONDS = 1;
             static const float EXPIRATION_AGE = _MaxPingAge - EXPIRATION_FADE_SECONDS;
+            static const float FADE_START_DISTANCE = 50;
+
             fixed4 frag (v2f i, fixed facing : VFACE) : SV_Target
             {
                 float distance = length(i.worldPos - _PingLocation);
@@ -65,6 +65,11 @@ Shader "thquinn/SonarShader"
                 }
                 f = clamp(f, 0, 1);
                 f *= facing < 0 ? _BackfaceMult : 1;
+                float distanceToCamera = length(i.worldPos - _WorldSpaceCameraPos);
+                if (distanceToCamera > FADE_START_DISTANCE) {
+                    f *= 1 - (distanceToCamera - FADE_START_DISTANCE) * .1;
+                    f = max(0, f);
+                }
                 if (_PingAge > EXPIRATION_AGE) {
                     f *= 1 - (_PingAge - EXPIRATION_AGE) / EXPIRATION_FADE_SECONDS;
                 }

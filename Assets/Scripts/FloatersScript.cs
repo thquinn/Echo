@@ -12,6 +12,7 @@ public class FloatersScript : MonoBehaviour
     static float FADE_RADIUS = 5;
 
     public GameObject prefabFloater;
+    public Material floaterMaterial;
 
     Transform camTransform;
     List<MeshRenderer> floaters;
@@ -19,6 +20,7 @@ public class FloatersScript : MonoBehaviour
     float[] alphas;
     bool[] fadingOut;
     Quaternion specular, specularVelocity, specularAcceleration;
+    MaterialPropertyBlock materialPropertyBlock;
 
     void Start() {
         camTransform = Camera.main.transform;
@@ -36,6 +38,7 @@ public class FloatersScript : MonoBehaviour
         fadingOut = new bool[numFloaters];
         specular = Random.rotation;
         specularAcceleration = Random.rotation;
+        materialPropertyBlock = new MaterialPropertyBlock();
     }
 
     void Update() {
@@ -52,12 +55,14 @@ public class FloatersScript : MonoBehaviour
             floater.transform.position = floaterPosition;
             float distance = delta.magnitude;
             alphas[i] = Util.Damp(alphas[i], fadingOut[i] ? .33f : 1, .5f, Time.deltaTime);
-            float multiplier = Mathf.Min(Mathf.InverseLerp(.01f, .1f, distance), Mathf.InverseLerp(FADE_RADIUS, RADIUS, distance));
+            float multiplier = Mathf.Min(Mathf.InverseLerp(1, 2, distance), Mathf.InverseLerp(RADIUS, FADE_RADIUS, distance));
             float alpha = alphas[i] * multiplier;
             if (Input.GetKey(KeyCode.Z)) {
                 alpha = 1;
             }
-            floater.material.SetFloat("_Alpha", alpha);
+            floater.GetPropertyBlock(materialPropertyBlock);
+            materialPropertyBlock.SetFloat("_Alpha", alpha);
+            floater.SetPropertyBlock(materialPropertyBlock);
         }
     }
 
@@ -74,8 +79,8 @@ public class FloatersScript : MonoBehaviour
             specularAcceleration = Random.rotation;
         }
         specularVelocity *= specularAcceleration;
-        specularVelocity = Quaternion.Lerp(specularVelocity, Quaternion.identity, .99f);
+        specularVelocity = Quaternion.Lerp(specularVelocity, Quaternion.identity, .97f);
         specular *= specularVelocity;
-        floaters[0].sharedMaterial.SetVector("_SpecularVector", specular * Vector3.up);
+        floaterMaterial.SetVector("_SpecularVector", specular * Vector3.up);
     }
 }

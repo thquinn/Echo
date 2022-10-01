@@ -60,7 +60,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0
+    - _Alpha: 0.5
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -77,8 +77,9 @@ Material:
     - _SrcBlend: 5
     - _UVSec: 0
     - _ZWrite: 0
+    - s_Alpha: 0.5
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
-    - _SpecularVector: {r: -0.3969735, g: -0.77280277, b: -0.49516433, a: 0}
+    - _SpecularVector: {r: 0.5973814, g: -0.6172308, b: 0.51201546, a: 0}
   m_BuildTextureStacks: []

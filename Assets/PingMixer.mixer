@@ -18,6 +18,8 @@ AudioMixerController:
   m_ExposedParameters:
   - guid: 7069c071a1863554ea9b47e3a9d14c8a
     name: Volume
+  - guid: 661b5a99f7bd04b439e2b590e7ee879a
+    name: Pitch
   - guid: f8b7c0b9c72669044b592b8b13f50ca9
     name: Flange_Wetmix
   - guid: 9557f6a8508a3c44cbf56028d993cf38

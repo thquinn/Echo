@@ -7,6 +7,11 @@ using UnityEngine;
 
 namespace Assets.Code {
     public class Util {
+        static LayerMask layerMaskTerrain;
+        static Util() {
+            layerMaskTerrain = LayerMask.GetMask("Terrain");
+        }
+
         public static float Damp(float source, float target, float smoothing, float dt) {
             return Mathf.Lerp(source, target, 1 - Mathf.Pow(smoothing, dt));
         }
@@ -18,6 +23,39 @@ namespace Assets.Code {
         }
         public static Quaternion Damp(Quaternion source, Quaternion target, float smoothing, float dt) {
             return Quaternion.Lerp(source, target, 1 - Mathf.Pow(smoothing, dt));
+        }
+
+        
+        public static bool IsOnGround(GameObject go, int numChecks, float radius, float height) {
+            Vector3 position = go.transform.position;
+            position.y += height * .5f;
+            for (int i = -1; i < numChecks; i++) {
+                RaycastHit hitInfo;
+                if (i == -1) {
+                    Physics.Raycast(position, Vector3.down, out hitInfo, height, layerMaskTerrain);
+                } else {
+                    float theta = 2 * Mathf.PI / numChecks * i;
+                    position.x += Mathf.Cos(theta) * radius;
+                    position.z += Mathf.Sin(theta) * radius;
+                    Physics.Raycast(position, Vector3.down, out hitInfo, height, layerMaskTerrain);
+                }
+                if (hitInfo.collider != null && Vector3.Dot(hitInfo.normal, Vector3.up) > .5f) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static Vector3 GetWallrunNormal(GameObject go, Vector3 moveDirection, float height) {
+            Vector3 position = go.transform.position;
+            position.y += height;
+            RaycastHit hitInfo;
+            Physics.Raycast(position, moveDirection.normalized, out hitInfo, PlayerScript.WALLRUN_CHECK_DISTANCE, layerMaskTerrain);
+            Debug.DrawLine(position, position + moveDirection.normalized * PlayerScript.WALLRUN_CHECK_DISTANCE, Color.white, 2);
+            if (hitInfo.collider == null) {
+                return Vector3.zero;
+            }
+            float yComponent = Vector3.Dot(hitInfo.normal, Vector3.up);
+            return yComponent > -.05f && yComponent < .2f ? hitInfo.normal : Vector3.zero;
         }
     }
 
