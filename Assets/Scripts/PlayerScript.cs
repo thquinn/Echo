@@ -10,12 +10,15 @@ public class PlayerScript : MonoBehaviour
     static float PING_SPEED = 14f;
     static float PING_EXPONENT = .85f;
     static float MOVE_SPEED = 10;
+    static float MOVE_INERTIA = .1f;
+    static float STOP_INERTIA = .5f;
+    static float WALLJUMP_INERTIA = .02f;
     static float LOOK_SENSITIVITY = .4f;
     static float JUMP_SPEED = 5;
     static float COYOTE_TIME = .33f;
     static float JUMP_DELAY = .2f;
-    static float WALLJUMP_HORIZONTAL_SPEED = 4;
-    static float WALLJUMP_VERTICAL_SPEED = 10;
+    static float WALLJUMP_HORIZONTAL_SPEED = 5;
+    static float WALLJUMP_VERTICAL_SPEED = 4;
     public static float WALLRUN_CHECK_DISTANCE = .85f;
     static float WALLRUN_INITIAL_VELOCITY = 2.5f;
     static float WALLRUN_INITIAL_FORCE = .2f;
@@ -33,8 +36,9 @@ public class PlayerScript : MonoBehaviour
     public AudioSource[] sfxSteps, sfxSoftSteps, sfxJumps, sfxLandings;
     public AudioMixer mixerPing, mixerAmbience;
 
-    bool jumped, isWallrunning;
-    float groundTimer, wallrunTimer, walljumpTimer;
+    bool isGrounded, jumped, walljumped, isWallrunning;
+    float groundTimer, wallrunTimer, walljumpCooldown, walljumpCoyoteTime;
+    Vector3 lastWallrunNormal;
     Vector3 pingLocation;
     float pingTimer, pingPitch;
     float stepTimer = .5f;
@@ -73,32 +77,49 @@ public class PlayerScript : MonoBehaviour
         cam.transform.localRotation = Quaternion.Euler(thetaX, 0, 0);
     }
     void UpdateControls() {
+        isGrounded = Util.IsOnGround(gameObject, 8, .5f, .1f);
         if (groundTimer < 0) {
             groundTimer = Mathf.Min(0, groundTimer + Time.deltaTime);
-        } else if (Util.IsOnGround(gameObject, 8, .5f, .1f)) {
+        } else if (isGrounded) {
             groundTimer = COYOTE_TIME;
             wallrunTimer = 0;
+            walljumpCooldown = 0;
         } else {
             groundTimer = Mathf.Max(0, groundTimer - Time.deltaTime);
         }
-        if (groundTimer > 0 && !jumped && Input.GetButtonDown("Jump")) {
+        bool jumpButton = Input.GetButtonDown("Jump");
+        if (groundTimer > 0 && !jumped && jumpButton) {
             jumped = true;
             groundTimer = -JUMP_DELAY;
             sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
         }
+        walljumpCooldown = Mathf.Max(0, walljumpCooldown - Time.fixedDeltaTime);
+        if (!isGrounded && walljumpCooldown <= 0 && walljumpCoyoteTime > 0 && jumpButton) {
+            walljumped = true;
+            walljumpCooldown = WALLJUMP_COOLDOWN_TIMER;
+            walljumpCoyoteTime = 0;
+        }
     }
     void UpdateVelocity() {
-        float rawX = Input.GetAxisRaw("Horizontal");
-        float rawY = Input.GetAxisRaw("Vertical");
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
-        Vector3 inputVelocity = transform.forward * rawY * MOVE_SPEED + transform.right * rawX * MOVE_SPEED;
-        Vector3 moveVelocity = transform.forward * y * MOVE_SPEED + transform.right * x * MOVE_SPEED;
+        Vector3 inputVelocity = transform.forward * y * MOVE_SPEED + transform.right * x * MOVE_SPEED;
+        float inertia;
+        if (walljumpCooldown > 0) {
+            inertia = WALLJUMP_INERTIA;
+        } else if (inputVelocity.sqrMagnitude == 0) {
+            inertia = STOP_INERTIA;
+        } else {
+            inertia = MOVE_INERTIA;
+        }
+        Vector3 moveVelocity = Vector3.Lerp(rb.velocity, inputVelocity, inertia);
         float moveMagnitude = moveVelocity.magnitude;
         Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
-        isWallrunning = groundTimer <= 0 && walljumpTimer <= 0 && x != 0 && wallrunNormal != Vector3.zero;
+        isWallrunning = groundTimer <= 0 && walljumpCooldown <= 0 && x != 0 && wallrunNormal != Vector3.zero;
         float yVelocity = rb.velocity.y;
         if (isWallrunning) {
+            lastWallrunNormal = wallrunNormal;
+            walljumpCoyoteTime = COYOTE_TIME;
             if (wallrunTimer == 0) {
                 yVelocity = Mathf.Max(yVelocity, WALLRUN_INITIAL_VELOCITY);
             } else if (wallrunTimer < WALLRUN_DURATION) {
@@ -112,18 +133,17 @@ public class PlayerScript : MonoBehaviour
             moveVelocity = moveVelocity.normalized * moveMagnitude;
             wallrunTimer += Time.fixedDeltaTime;
             sfxSlide.transform.localPosition = moveVelocity.normalized;
-            // Wall jumps.
-            if (Input.GetButtonDown("Jump")) {
-                moveVelocity = wallrunNormal * WALLJUMP_HORIZONTAL_SPEED;
-                yVelocity = WALLJUMP_VERTICAL_SPEED;
-                walljumpTimer = WALLJUMP_COOLDOWN_TIMER;
-            }
         } else if (jumped) {
             yVelocity = JUMP_SPEED;
+        } else if (walljumped) {
+            sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
+            moveVelocity += lastWallrunNormal * WALLJUMP_HORIZONTAL_SPEED;
+            yVelocity = WALLJUMP_VERTICAL_SPEED;
+            wallrunTimer = 0;
+            walljumped = false;
         }
         jumped = false;
         rb.velocity = new Vector3(moveVelocity.x, yVelocity, moveVelocity.z);
-        walljumpTimer = Mathf.Max(0, walljumpTimer - Time.fixedDeltaTime);
     }
 
     void UpdateSonar() {
