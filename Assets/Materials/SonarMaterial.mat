@@ -74,8 +74,8 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _PingAge: 3.1158214
-    - _PingDistance: 38.098217
+    - _PingAge: 7.5728726
+    - _PingDistance: 81.04749
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 8
@@ -85,5 +85,5 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _PingLocation: {r: -2.8204198, g: -0.000000059604645, b: 22.628498, a: 0}
+    - _PingLocation: {r: -5.703827, g: -0.00000166893, b: 5.86942, a: 0}
   m_BuildTextureStacks: []

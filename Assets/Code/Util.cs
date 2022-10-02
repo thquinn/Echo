@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Code {
     public class Util {
-        static LayerMask layerMaskTerrain;
+        static LayerMask layerMaskTerrain, layerMaskSconce;
         static Util() {
             layerMaskTerrain = LayerMask.GetMask("Terrain");
+            layerMaskSconce = LayerMask.GetMask("Sconce");
         }
 
         public static float Damp(float source, float target, float smoothing, float dt) {
@@ -31,7 +33,24 @@ namespace Assets.Code {
             return output;
         }
 
-        
+        public static GameObject GetDirectChildWithTag(Transform transform, string tag) {
+            foreach (Transform child in transform) {
+                if (child.tag == tag) {
+                    return child.gameObject;
+                }
+            }
+            return null;
+        }
+        public static List<GameObject> GetDirectChildrenWithTag(Transform transform, string tag) {
+            List<GameObject> children = new List<GameObject>();
+            foreach (Transform child in transform) {
+                if (child.tag == tag) {
+                    children.Add(child.gameObject);
+                }
+            }
+            return children;
+        }
+
         public static bool IsOnGround(GameObject go, int numChecks, float radius, float height) {
             Vector3 position = go.transform.position;
             position.y += height * .5f;
@@ -63,6 +82,14 @@ namespace Assets.Code {
             }
             float yComponent = Vector3.Dot(hitInfo.normal, Vector3.up);
             return yComponent > -.05f && yComponent < .2f ? hitInfo.normal : Vector3.zero;
+        }
+        public static SconceScript GetLookedSconce(Camera cam) {
+            RaycastHit hitInfo;
+            Physics.Raycast(cam.transform.position, cam.transform.forward, out hitInfo, 10, layerMaskSconce);
+            if (hitInfo.collider == null) {
+                return null;
+            }
+            return hitInfo.collider.GetComponent<SconceScript>();
         }
     }
 

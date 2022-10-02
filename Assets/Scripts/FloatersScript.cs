@@ -23,14 +23,10 @@ public class FloatersScript : MonoBehaviour
     MaterialPropertyBlock materialPropertyBlock;
 
     void Start() {
-        camTransform = Camera.main.transform;
-        transform.position = camTransform.position;
         int numFloaters = Mathf.RoundToInt(RADIUS * RADIUS * RADIUS * DENSITY);
         floaters = new List<MeshRenderer>();
         for (int i = 0; i < numFloaters; i++) {
-            GameObject floater = Instantiate(prefabFloater, transform);
-            floater.transform.localPosition = new Vector3(Random.Range(-RADIUS, RADIUS), Random.Range(-RADIUS, RADIUS), Random.Range(-RADIUS, RADIUS));
-            floaters.Add(floater.GetComponent<MeshRenderer>());
+            floaters.Add(Instantiate(prefabFloater, transform).GetComponent<MeshRenderer>());
         }
         velocities = new Vector3[numFloaters];
         velocityTargets = velocities.Select(v => Random.onUnitSphere).ToArray();
@@ -39,6 +35,13 @@ public class FloatersScript : MonoBehaviour
         specular = Random.rotation;
         specularAcceleration = Random.rotation;
         materialPropertyBlock = new MaterialPropertyBlock();
+    }
+    public void Init() {
+        camTransform ??= Camera.main.transform;
+        transform.position = camTransform.position;
+        foreach (MeshRenderer floater in floaters) {
+            floater.transform.localPosition = new Vector3(Random.Range(-RADIUS, RADIUS), Random.Range(-RADIUS, RADIUS), Random.Range(-RADIUS, RADIUS));
+        }
     }
 
     void Update() {

@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: df3726b5499f44c49a57aad7aad4b19a
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Tiresias LPfont
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 16a5530a4578dd0479455aa537570685, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
