@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-/*
 [CustomEditor(typeof(Transform))]
 [CanEditMultipleObjects]
-*/
 public class CustomEditors : Editor
 {
     public override void OnInspectorGUI() {

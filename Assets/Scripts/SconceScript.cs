@@ -8,7 +8,9 @@ public class SconceScript : MonoBehaviour
 {
     public GameObject nameplate;
     public MeshRenderer meshRenderer;
+    public MeshFilter meshFilter;
     public TextMeshPro tmpName, tmpTime;
+    public Mesh[] levelMeshes;
 
     public int index;
     Camera cam;
@@ -27,7 +29,9 @@ public class SconceScript : MonoBehaviour
             tmpTime.text = Util.SecondsToTimeString(PlayerPrefs.GetFloat(key));
         } else {
             tmpTime.text = "";
+            meshRenderer.enabled = false;
         }
+        meshFilter.mesh = levelMeshes[index];
     }
 
     public void Look() {

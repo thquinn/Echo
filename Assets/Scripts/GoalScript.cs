@@ -35,7 +35,7 @@ public class GoalScript : MonoBehaviour
             materialPropertyBlock.SetFloat("_Alpha", Mathf.Lerp(0, ALPHA, Mathf.InverseLerp(15, 10, distance)));
             meshRenderer.SetPropertyBlock(materialPropertyBlock);
         }
-        transform.localPosition = originalPosition + new Vector3(0, Mathf.Sin(Time.time * 5 / Mathf.PI) * .25f + rand, 0);
+        transform.localPosition = originalPosition + new Vector3(0, Mathf.Sin(Time.time * 5 / Mathf.PI + rand) * .25f, 0);
     }
     void FixedUpdate() {
         angularVelocity = Quaternion.Lerp(angularVelocity, targetAngularVelocity, 0.005f);

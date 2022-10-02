@@ -65,6 +65,7 @@ Shader "thquinn/SonarShader"
                     f = .01 / delta;
                 }
                 f = clamp(f, 0, 1);
+                f += .01;
                 f *= facing < 0 ? _BackfaceMult : 1;
                 float distanceToCamera = length(i.worldPos - _WorldSpaceCameraPos);
                 if (distanceToCamera > FADE_START_DISTANCE) {
@@ -74,6 +75,8 @@ Shader "thquinn/SonarShader"
                 if (_PingAge > EXPIRATION_AGE) {
                     f *= 1 - (_PingAge - EXPIRATION_AGE) / EXPIRATION_FADE_SECONDS;
                 }
+                f -= .01;
+                f = clamp(f, 0, 1);
                 fixed4 col = fixed4(1, 1, 1, f);
                 return col;
             }

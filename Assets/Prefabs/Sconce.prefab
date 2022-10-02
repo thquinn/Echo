@@ -437,8 +437,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameplate: {fileID: 1230949398030596950}
   meshRenderer: {fileID: 709176627614114285}
+  meshFilter: {fileID: 4103406273101415801}
   tmpName: {fileID: 1230949399229578859}
   tmpTime: {fileID: 1230949397636409282}
+  levelMeshes:
+  - {fileID: -2432090755550338912, guid: 8e85b85f3a6cf5f4790f14c5a129da40, type: 3}
+  - {fileID: -2432090755550338912, guid: 32fa28d370621934e93a922ff01c05c1, type: 3}
+  - {fileID: -2432090755550338912, guid: 8d6b39cae4c390d49b129a98fba7b32f, type: 3}
+  - {fileID: -2432090755550338912, guid: a9b938219ebf95a49a33139261bac6fa, type: 3}
+  - {fileID: -2432090755550338912, guid: b7ab86a8b871e2740b7f62d8e4949d24, type: 3}
+  - {fileID: -2432090755550338912, guid: 011a94158ef988c49a6f136eb2813aa3, type: 3}
+  - {fileID: -2432090755550338912, guid: 5f7cf052e0e044e459c1696a5cb1a268, type: 3}
+  - {fileID: -2432090755550338912, guid: 93fc7c8863f9ceb4dbe73ee6a3b291d7, type: 3}
   index: 0
 --- !u!65 &8263958371221948017
 BoxCollider:

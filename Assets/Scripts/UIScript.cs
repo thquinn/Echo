@@ -8,7 +8,7 @@ public class UIScript : MonoBehaviour
 {
     public GameManagerScript gameManager;
     public TextMeshProUGUI tmpLevelTimer;
-    public CanvasGroup canvasGroupFade;
+    public CanvasGroup canvasGroupFade, canvasGroupClickPrompt;
 
     bool fading;
     bool firstFade;
@@ -18,6 +18,7 @@ public class UIScript : MonoBehaviour
             canvasGroupFade.alpha = 1;
             firstFade = true;
         }
+        canvasGroupClickPrompt.alpha = 1;
     }
 
     void Update() {
@@ -26,6 +27,11 @@ public class UIScript : MonoBehaviour
         tmpLevelTimer.enabled = gameManager.currentLevel.ShowTimer();
         if (tmpLevelTimer.enabled) {
             tmpLevelTimer.text = Util.SecondsToTimeString(gameManager.currentLevel.time, true);
+        }
+        if (Time.time > 5 && gameManager.currentLevel.index == GameManagerScript.LEVEL_INDEX_INTRO && !gameManager.currentLevel.started) {
+            canvasGroupClickPrompt.alpha += Time.deltaTime;
+        } else {
+            canvasGroupClickPrompt.alpha = 0;
         }
     }
 

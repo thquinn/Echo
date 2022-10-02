@@ -15,7 +15,7 @@ public class PlayerScript : MonoBehaviour
     static float COYOTE_TIME = .33f;
     static float JUMP_DELAY = .2f;
     static float WALLRUN_MIN_SPEED = 5f;
-    static float WALLRUN_ACCELERATION = 10f;
+    static float WALLRUN_ACCELERATION = 20f;
     static float WALLRUN_INITIAL_VELOCITY = 2.5f;
     static float WALLRUN_INITIAL_FORCE = .2f;
     static float WALLRUN_FORCE_EXPONENT = 1.5f;
@@ -61,10 +61,12 @@ public class PlayerScript : MonoBehaviour
         }
         UpdateSonar();
         UpdateSFX();
-        if (Application.isEditor) {
-            if (Input.GetKeyDown(KeyCode.F1)) {
-                transform.position = Vector3.zero;
-            }
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F7)) {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+        }
+        if (Input.GetKey(KeyCode.Escape) && !Application.isEditor) {
+            Application.Quit();
         }
     }
     private void FixedUpdate() {
@@ -133,7 +135,6 @@ public class PlayerScript : MonoBehaviour
             );
         }
         float moveMagnitude = moveVelocity.magnitude;
-        Debug.Log("mov mag: " + moveMagnitude);
         Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
         isWallrunning = groundTimer <= 0 && walljumpCooldown <= 0 && input.x != 0 && moveMagnitude > WALLRUN_MIN_SPEED && wallrunNormal != Vector3.zero && Mathf.Abs(Vector3.Dot(wallrunNormal, transform.forward)) < .66f;
         float yVelocity = rb.velocity.y;

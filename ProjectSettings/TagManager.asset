@@ -9,6 +9,7 @@ TagManager:
   - Floaters
   - Goal
   - StartsWithPulse
+  - TotalTime
   layers:
   - Default
   - TransparentFX
