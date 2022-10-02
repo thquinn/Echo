@@ -8,6 +8,7 @@ TagManager:
   - GoalMarker
   - Floaters
   - Goal
+  - StartsWithPulse
   layers:
   - Default
   - TransparentFX

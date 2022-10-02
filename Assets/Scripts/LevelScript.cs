@@ -12,7 +12,7 @@ public class LevelScript : MonoBehaviour
     public GameObject prefabGoal;
     public Material sonarMaterial;
 
-    public int index;
+    [HideInInspector] public int index;
     [HideInInspector] public float time;
     [HideInInspector] public bool started, done;
 

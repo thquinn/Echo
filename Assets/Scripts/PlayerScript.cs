@@ -9,7 +9,7 @@ public class PlayerScript : MonoBehaviour
     static float MOVE_SPEED = 10;
     static float MOVE_INERTIA = .1f;
     static float STOP_INERTIA = .5f;
-    static float WALLJUMP_INERTIA = .02f;
+    static float WALLJUMP_INERTIA = .025f;
     static float LOOK_SENSITIVITY = .4f;
     static float JUMP_SPEED = 6.5f;
     static float COYOTE_TIME = .33f;
@@ -20,10 +20,10 @@ public class PlayerScript : MonoBehaviour
     static float WALLRUN_INITIAL_FORCE = .2f;
     static float WALLRUN_FORCE_EXPONENT = 1.5f;
     static float WALLRUN_DURATION = 1.5f;
-    static float WALLJUMP_COOLDOWN_TIMER = 1f;
+    static float WALLJUMP_COOLDOWN_TIMER = .33f;
     static float WALLJUMP_HORIZONTAL_SPEED = 5;
     static float WALLJUMP_VERTICAL_SPEED = 4;
-    public static float WALLRUN_CHECK_DISTANCE = .85f;
+    public static float WALLRUN_CHECK_DISTANCE = 1.0f;
     // Non-gameplay variables.
     static float PING_PITCH_DROP_FACTOR = .02f;
     static float FOOTSTEP_RATE_MULTIPLIER = 3f;
@@ -108,7 +108,8 @@ public class PlayerScript : MonoBehaviour
             groundTimer = -JUMP_DELAY;
             sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
         }
-        walljumpCooldown = Mathf.Max(0, walljumpCooldown - Time.fixedDeltaTime);
+        walljumpCooldown = Mathf.Max(0, walljumpCooldown - Time.deltaTime);
+        walljumpCoyoteTime -= Time.deltaTime;
         if (!isGrounded && walljumpCooldown <= 0 && walljumpCoyoteTime > 0 && jumpButton) {
             walljumped = true;
             walljumpCooldown = WALLJUMP_COOLDOWN_TIMER;
@@ -132,6 +133,7 @@ public class PlayerScript : MonoBehaviour
             );
         }
         float moveMagnitude = moveVelocity.magnitude;
+        Debug.Log("mov mag: " + moveMagnitude);
         Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
         isWallrunning = groundTimer <= 0 && walljumpCooldown <= 0 && input.x != 0 && moveMagnitude > WALLRUN_MIN_SPEED && wallrunNormal != Vector3.zero && Mathf.Abs(Vector3.Dot(wallrunNormal, transform.forward)) < .66f;
         float yVelocity = rb.velocity.y;

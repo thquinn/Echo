@@ -643,7 +643,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 112
-  m_CollisionDetection: 2
+  m_CollisionDetection: 0
 --- !u!4 &1094999842
 Transform:
   m_ObjectHideFlags: 0
@@ -2207,17 +2207,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabLevels:
   - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
-  - {fileID: 4557398018294636485, guid: ca5ca1f32d22b764185b4338ba312501, type: 3}
+  - {fileID: 4557398018294636485, guid: eaca6e24284275a47a5d95f17bc633c4, type: 3}
+  - {fileID: 4557398018294636485, guid: 5e725eac8d6148849a69106b4662952c, type: 3}
+  - {fileID: 4557398018294636485, guid: fa0d92a8362abda41a7c4ce8025c74e2, type: 3}
   prefabLevelHub: {fileID: 8739520969798653921, guid: 86e22fa96f857ad4a8aa56c1042145d8, type: 3}
   prefabLevelIntro: {fileID: 122965551694356929, guid: f5954d1f987ba2540af99e62c7ef68de, type: 3}
   prefabSconce: {fileID: 1230949398929625562, guid: 3cdedff65aca9204daeaf52e60a9bb1b, type: 3}

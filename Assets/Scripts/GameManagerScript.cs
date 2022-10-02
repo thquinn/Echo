@@ -43,6 +43,9 @@ public class GameManagerScript : MonoBehaviour
                 PlayerPrefs.Save();
             }
             FadeToLevel(LEVEL_INDEX_HUB);
+        } else if (playerScript.transform.position.y < -3) {
+            // Falling off.
+            FadeToLevel(currentLevel.index == LEVEL_INDEX_INTRO ? LEVEL_INDEX_INTRO : LEVEL_INDEX_HUB);
         }
     }
 
