@@ -36,7 +36,9 @@ public class PlayerScript : MonoBehaviour
     public AudioMixer mixerPing, mixerAmbience;
 
     public GameManagerScript gameManager;
+    public UIScript uiScript;
     LevelScript levelScript;
+    [HideInInspector] public bool hasPulse;
     bool isGrounded, jumped, walljumped, isWallrunning;
     float groundTimer, wallrunTimer, walljumpCooldown, walljumpCoyoteTime;
     Vector3 lastWallrunNormal;
@@ -53,8 +55,10 @@ public class PlayerScript : MonoBehaviour
     }
 
     void Update() {
-        UpdateLook();
-        UpdateControls();
+        if (levelScript.started) {
+            UpdateLook();
+            UpdateControls();
+        }
         UpdateSonar();
         UpdateSFX();
         if (Application.isEditor) {
@@ -64,7 +68,9 @@ public class PlayerScript : MonoBehaviour
         }
     }
     private void FixedUpdate() {
-        UpdateVelocity();
+        if (levelScript.started) {
+            UpdateVelocity();
+        }
     }
 
     void UpdateLook() {
@@ -166,10 +172,11 @@ public class PlayerScript : MonoBehaviour
         mixerPing.SetFloat("Pitch", pingPitch);
         float fadeFactor = Mathf.InverseLerp(LevelScript.PING_PERIOD - 2, LevelScript.PING_PERIOD, levelScript.pingTimer);
         float pingVolume = Mathf.Pow(proximity, 1.25f) * -.5f + fadeFactor * -35;
+        pingVolume -= 40 * uiScript.GetFade();
         mixerPing.SetFloat("Volume", pingVolume);
         float twinkleVolume = Mathf.Lerp(0f, .05f, Mathf.InverseLerp(0, -40, pingVolume));
-        sfxTwinkle.volume = Util.Damp(sfxTwinkle.volume, twinkleVolume, sfxTwinkle.volume < twinkleVolume ? .5f : .001f, Time.deltaTime);
-        float proximityAndTime = levelScript.pingTimer * (1 / (proximity + 1));
+        sfxTwinkle.volume = Util.Damp(sfxTwinkle.volume, twinkleVolume, sfxTwinkle.volume < twinkleVolume ? .75f : .001f, Time.deltaTime);
+        float proximityAndTime = levelScript.time * (1 / (proximity + 1));
         float mixerEffectIntensity = proximityAndTime / (proximityAndTime + 1);
         mixerPing.SetFloat("Flange_Drymix", 1 - mixerEffectIntensity);
         mixerPing.SetFloat("Flange_Wetmix", mixerEffectIntensity);

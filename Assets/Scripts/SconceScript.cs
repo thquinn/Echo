@@ -22,7 +22,12 @@ public class SconceScript : MonoBehaviour
     public void Init(int index) {
         this.index = index;
         tmpName.text = "Level " + (index + 1);
-        tmpTime.text = "";
+        string key = GameManagerScript.LEVEL_SAVE_KEY_PREFIX + index;
+        if (PlayerPrefs.HasKey(key)) {
+            tmpTime.text = Util.SecondsToTimeString(PlayerPrefs.GetFloat(key));
+        } else {
+            tmpTime.text = "";
+        }
     }
 
     public void Look() {
@@ -37,7 +42,7 @@ public class SconceScript : MonoBehaviour
         if (lookTimer > 0) {
             Quaternion lookRotation = Quaternion.LookRotation(nameplate.transform.position - cam.transform.position);
             nameplate.transform.rotation = Util.Damp(nameplate.transform.rotation, lookRotation, .001f, Time.deltaTime);
-        } else {
+        } else if (tmpName.color.a <= 0) {
             nameplate.transform.localRotation = Quaternion.identity;
         }
     }

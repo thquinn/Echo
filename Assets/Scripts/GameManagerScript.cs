@@ -4,13 +4,16 @@ using UnityEngine;
 
 public class GameManagerScript : MonoBehaviour
 {
-    public static string LEVEL_SAVE_KEY = "LevelTime";
+    public static string LEVEL_SAVE_KEY_PREFIX = "LevelTime_";
     static int LEVEL_INDEX_NONE = -3;
     static int LEVEL_INDEX_INTRO = -2;
-    static int LEVEL_INDEX_HUB = -1;
+    public static int LEVEL_INDEX_HUB = -1;
+    static float SCONCE_DISTANCE = 8f;
+    static float SCONCE_ANGULAR_DISTANCE = Mathf.PI / 7;
 
     public GameObject[] prefabLevels;
     public GameObject prefabLevelHub, prefabLevelIntro;
+    public GameObject prefabSconce;
 
     public PlayerScript playerScript;
     public UIScript uiScript;
@@ -19,7 +22,7 @@ public class GameManagerScript : MonoBehaviour
     int nextLevel;
 
     void Start() {
-        if (!PlayerPrefs.HasKey(LEVEL_SAVE_KEY + LEVEL_INDEX_INTRO)) {
+        if (!PlayerPrefs.HasKey(LEVEL_SAVE_KEY_PREFIX + LEVEL_INDEX_INTRO)) {
             LoadLevel(LEVEL_INDEX_INTRO);
         } else {
             LoadLevel(LEVEL_INDEX_HUB);
@@ -31,12 +34,15 @@ public class GameManagerScript : MonoBehaviour
         if (nextLevel != LEVEL_INDEX_NONE && uiScript.DoneFading()) {
             LoadLevel(nextLevel);
             nextLevel = LEVEL_INDEX_NONE;
-            uiScript.Invoke("FadeIn", 1);
+            uiScript.Invoke("FadeIn", .5f);
         }
         if (currentLevel.IsDone()) {
-            PlayerPrefs.SetFloat(LEVEL_SAVE_KEY + currentLevel.index, currentLevel.time);
-            PlayerPrefs.Save();
-                FadeToLevel(LEVEL_INDEX_HUB);
+            string key = LEVEL_SAVE_KEY_PREFIX + currentLevel.index;
+            if (currentLevel.time < PlayerPrefs.GetFloat(key, float.MaxValue)) {
+                PlayerPrefs.SetFloat(key, currentLevel.time);
+                PlayerPrefs.Save();
+            }
+            FadeToLevel(LEVEL_INDEX_HUB);
         }
     }
 
@@ -60,7 +66,22 @@ public class GameManagerScript : MonoBehaviour
             Destroy(currentLevel.gameObject);
         }
         currentLevel = Instantiate(prefab).GetComponent<LevelScript>();
-        Debug.Assert(currentLevel.index == index);
+        currentLevel.index = index;
         playerScript.SetLevel(currentLevel);
+        // Instantiate sconces.
+        if (index == LEVEL_INDEX_HUB) {
+            currentLevel.started = true;
+            for (int i = 0; i < prefabLevels.Length; i++) {
+                GameObject sconce = Instantiate(prefabSconce, currentLevel.transform);
+                float angleMultipler = (prefabLevels.Length - 1) / -2f + i;
+                float angle = SCONCE_ANGULAR_DISTANCE * -angleMultipler;
+                sconce.transform.localPosition = new Vector3(Mathf.Cos(angle) * SCONCE_DISTANCE, 0, Mathf.Sin(angle) * SCONCE_DISTANCE);
+                sconce.transform.localRotation = Quaternion.Euler(0, -angle * Mathf.Rad2Deg + 90, 0);
+                sconce.GetComponent<SconceScript>().Init(i);
+                if (!PlayerPrefs.HasKey(LEVEL_SAVE_KEY_PREFIX + i)) {
+                    break;
+                }
+            }
+        }
     }
 }

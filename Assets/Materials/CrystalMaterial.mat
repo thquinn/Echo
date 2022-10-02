@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SonarMaterial
-  m_Shader: {fileID: 4800000, guid: 18ceb6116f5b45c49b6b628002808a5d, type: 3}
+  m_Name: CrystalMaterial
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -58,32 +58,23 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BackfaceMult: 0.33
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FalloffExp: 1.5
-    - _FalloffMult: 0.45
-    - _FalloffPow: 0.97
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _MaxPingAge: 10
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _PingAge: 4.137265
-    - _PingDistance: 48.48131
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _Speed: 8
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _PingLocation: {r: -5.6830606, g: -0.0000017881393, b: -0.7680498, a: 0}
   m_BuildTextureStacks: []

@@ -9,6 +9,15 @@ namespace Assets.Code {
             layerMaskSconce = LayerMask.GetMask("Sconce");
         }
 
+        public static string SecondsToTimeString(float time, bool monospaced = false) {
+            float minutes = Mathf.FloorToInt(time / 60);
+            float seconds = time % 60;
+            if (monospaced) { 
+                return string.Format("<mspace=.66em>{0}</mspace>:<mspace=.66em>{1:00}</mspace>.<mspace=.66em>{2:00}</mspace>", minutes, Mathf.FloorToInt(seconds), Mathf.FloorToInt((seconds % 1) / .01f));
+            }
+            return string.Format("{0}:{1:00.00}", minutes, seconds);
+        }
+
         public static float Damp(float source, float target, float smoothing, float dt) {
             return Mathf.Lerp(source, target, 1 - Mathf.Pow(smoothing, dt));
         }
