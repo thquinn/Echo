@@ -703,8 +703,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabGoal: {fileID: 4894223139150190778, guid: 117053eaa8cb7ac41b47884a33802e3b, type: 3}
   sonarMaterial: {fileID: 2100000, guid: d314e64c349fbcc4291445e75a8f8c3f, type: 2}
+  tmpTotalTime: {fileID: 0}
   index: 0
   time: 0
+  runTime: 0
   started: 0
   done: 0
   pingTimer: 0

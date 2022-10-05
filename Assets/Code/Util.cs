@@ -85,7 +85,6 @@ namespace Assets.Code {
             position.y += height;
             RaycastHit hitInfo;
             Physics.Raycast(position, moveDirection, out hitInfo, PlayerScript.WALLRUN_CHECK_DISTANCE, layerMaskTerrain);
-            Debug.DrawLine(position, position + moveDirection * PlayerScript.WALLRUN_CHECK_DISTANCE, Color.white, 2);
             if (hitInfo.collider == null) {
                 return Vector3.zero;
             }

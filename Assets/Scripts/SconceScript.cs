@@ -24,7 +24,7 @@ public class SconceScript : MonoBehaviour
     public void Init(int index) {
         this.index = index;
         tmpName.text = "Level " + (index + 1);
-        string key = GameManagerScript.LEVEL_SAVE_KEY_PREFIX + index;
+        string key = GameManagerScript.LEVEL_SAVE_TIME_KEY_PREFIX + index;
         if (PlayerPrefs.HasKey(key)) {
             tmpTime.text = Util.SecondsToTimeString(PlayerPrefs.GetFloat(key));
         } else {

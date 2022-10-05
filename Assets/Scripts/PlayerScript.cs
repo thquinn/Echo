@@ -14,6 +14,7 @@ public class PlayerScript : MonoBehaviour
     static float JUMP_SPEED = 6.5f;
     static float COYOTE_TIME = .33f;
     static float JUMP_DELAY = .2f;
+    public static float WALLRUN_CHECK_DISTANCE = 1.0f;
     static float WALLRUN_MIN_SPEED = 5f;
     static float WALLRUN_ACCELERATION = 20f;
     static float WALLRUN_INITIAL_VELOCITY = 2.5f;
@@ -23,7 +24,7 @@ public class PlayerScript : MonoBehaviour
     static float WALLJUMP_COOLDOWN_TIMER = .33f;
     static float WALLJUMP_HORIZONTAL_SPEED = 5;
     static float WALLJUMP_VERTICAL_SPEED = 4;
-    public static float WALLRUN_CHECK_DISTANCE = 1.0f;
+    static float WALLJUMP_CONTINUED_PUSH_MULTIPLIER = 20;
     // Non-gameplay variables.
     static float PING_PITCH_DROP_FACTOR = .02f;
     static float FOOTSTEP_RATE_MULTIPLIER = 3f;
@@ -32,7 +33,7 @@ public class PlayerScript : MonoBehaviour
     public Rigidbody rb;
     public Camera cam;
     public AudioSource sfxPing, sfxTwinkle, sfxSlide;
-    public AudioSource[] sfxSteps, sfxSoftSteps, sfxJumps, sfxLandings;
+    public AudioSource[] sfxSteps, sfxSoftSteps, sfxJumps, sfxLandings, sfxWalljumpGrunts, sfxWalljumpScrapes;
     public AudioMixer mixerPing, mixerAmbience;
 
     public GameManagerScript gameManager;
@@ -40,11 +41,11 @@ public class PlayerScript : MonoBehaviour
     LevelScript levelScript;
     [HideInInspector] public bool hasPulse;
     bool isGrounded, jumped, walljumped, isWallrunning;
-    float groundTimer, wallrunTimer, walljumpCooldown, walljumpCoyoteTime;
+    float groundTimer, wallrunTimer, walljumpCooldown, walljumpCoyoteTime, secondsSinceLastWalljump;
     Vector3 lastWallrunNormal;
     float pingPitch;
     float stepTimer = .5f;
-    int sfxStepLast, sfxSoftStepLast;
+    int sfxStepLast, sfxSoftStepLast, sfxWalljumpGruntLast;
 
     void Start() {
         Cursor.lockState = CursorLockMode.Locked;
@@ -62,7 +63,9 @@ public class PlayerScript : MonoBehaviour
         UpdateSonar();
         UpdateSFX();
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.F7)) {
+            int displayInput = PlayerPrefs.GetInt(UIScript.DISPLAY_INPUT_SAVE_KEY, 0);
             PlayerPrefs.DeleteAll();
+            PlayerPrefs.SetInt(UIScript.DISPLAY_INPUT_SAVE_KEY, displayInput);
             PlayerPrefs.Save();
         }
         if (Input.GetKey(KeyCode.Escape) && !Application.isEditor) {
@@ -101,6 +104,7 @@ public class PlayerScript : MonoBehaviour
             groundTimer = COYOTE_TIME;
             wallrunTimer = 0;
             walljumpCooldown = 0;
+            secondsSinceLastWalljump = 0;
         } else {
             groundTimer = Mathf.Max(0, groundTimer - Time.deltaTime);
         }
@@ -111,11 +115,15 @@ public class PlayerScript : MonoBehaviour
             sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
         }
         walljumpCooldown = Mathf.Max(0, walljumpCooldown - Time.deltaTime);
+        if (secondsSinceLastWalljump > 0) {
+            secondsSinceLastWalljump += Time.deltaTime;
+        }
         walljumpCoyoteTime -= Time.deltaTime;
         if (!isGrounded && walljumpCooldown <= 0 && walljumpCoyoteTime > 0 && jumpButton) {
             walljumped = true;
             walljumpCooldown = WALLJUMP_COOLDOWN_TIMER;
             walljumpCoyoteTime = 0;
+            secondsSinceLastWalljump = .0001f;
         }
     }
     void UpdateVelocity() {
@@ -134,6 +142,14 @@ public class PlayerScript : MonoBehaviour
                 Mathf.Lerp(rb.velocity.z, inputVelocity.z, inputVelocity.z == 0 ? STOP_INERTIA : MOVE_INERTIA)
             );
         }
+        if (secondsSinceLastWalljump > 0) {
+            // Check if we're going back towards the wall.
+            float towardsWall = Vector3.Dot(moveVelocity, -lastWallrunNormal) / lastWallrunNormal.magnitude;
+            if (towardsWall > 0) {
+                moveVelocity += lastWallrunNormal * towardsWall * Mathf.Min(1, WALLJUMP_CONTINUED_PUSH_MULTIPLIER / (100 * secondsSinceLastWalljump));
+            }
+        }
+
         float moveMagnitude = moveVelocity.magnitude;
         Vector3 wallrunNormal = Util.GetWallrunNormal(gameObject, inputVelocity, .5f);
         isWallrunning = groundTimer <= 0 && walljumpCooldown <= 0 && input.x != 0 && moveMagnitude > WALLRUN_MIN_SPEED && wallrunNormal != Vector3.zero && Mathf.Abs(Vector3.Dot(wallrunNormal, transform.forward)) < .66f;
@@ -141,6 +157,7 @@ public class PlayerScript : MonoBehaviour
         if (isWallrunning) {
             lastWallrunNormal = wallrunNormal;
             walljumpCoyoteTime = COYOTE_TIME;
+            secondsSinceLastWalljump = 0;
             if (wallrunTimer == 0) {
                 yVelocity = Mathf.Max(yVelocity, WALLRUN_INITIAL_VELOCITY);
             } else if (wallrunTimer < WALLRUN_DURATION) {
@@ -153,11 +170,12 @@ public class PlayerScript : MonoBehaviour
             moveVelocity -= wallrunNormal * Vector3.Dot(moveVelocity, wallrunNormal);
             moveVelocity = moveVelocity.normalized * Mathf.Min(MOVE_SPEED, moveMagnitude + Time.fixedDeltaTime * WALLRUN_ACCELERATION);
             wallrunTimer += Time.fixedDeltaTime;
-            sfxSlide.transform.localPosition = moveVelocity.normalized;
         } else if (jumped) {
             yVelocity = JUMP_SPEED;
         } else if (walljumped) {
-            sfxJumps[Random.Range(0, sfxJumps.Length)].Play();
+            sfxWalljumpGruntLast = Util.RangeOtherThan(0, sfxWalljumpGrunts.Length, sfxWalljumpGruntLast);
+            sfxWalljumpGrunts[sfxWalljumpGruntLast].Play();
+            sfxWalljumpScrapes[Random.Range(0, sfxWalljumpScrapes.Length)].Play();
             moveVelocity += lastWallrunNormal * WALLJUMP_HORIZONTAL_SPEED;
             yVelocity = WALLJUMP_VERTICAL_SPEED;
             wallrunTimer = 0;
@@ -175,6 +193,7 @@ public class PlayerScript : MonoBehaviour
         mixerPing.SetFloat("Pitch", pingPitch);
         float fadeFactor = Mathf.InverseLerp(LevelScript.PING_PERIOD - 2, LevelScript.PING_PERIOD, levelScript.pingTimer);
         float pingVolume = Mathf.Pow(proximity, 1.25f) * -.5f + fadeFactor * -35;
+        pingVolume = Mathf.Max(pingVolume, -10 - pingDistance);
         pingVolume -= 40 * uiScript.GetFade();
         mixerPing.SetFloat("Volume", pingVolume);
         float twinkleVolume = Mathf.Lerp(0f, .05f, Mathf.InverseLerp(0, -40, pingVolume));

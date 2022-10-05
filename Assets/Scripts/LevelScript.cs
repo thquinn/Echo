@@ -1,6 +1,7 @@
 using Assets.Code;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class LevelScript : MonoBehaviour
@@ -12,8 +13,10 @@ public class LevelScript : MonoBehaviour
     public GameObject prefabGoal;
     public Material sonarMaterial;
 
+    public TextMeshPro tmpTotalTime;
+
     [HideInInspector] public int index;
-    [HideInInspector] public float time;
+    [HideInInspector] public float time, runTime;
     [HideInInspector] public bool started, done;
 
     PlayerScript playerScript;
@@ -23,7 +26,9 @@ public class LevelScript : MonoBehaviour
     GameObject objectWithPulse;
 
     void Start() {
+        PlayerPrefs.SetInt(GameManagerScript.LEVEL_SAVE_ENTER_KEY_PREFIX + index, 1);
         time = -1;
+        runTime = 0;
         if (index == GameManagerScript.LEVEL_INDEX_HUB) {
             pingTimer = PING_PERIOD - 2;
         } else {
@@ -34,12 +39,12 @@ public class LevelScript : MonoBehaviour
         sonarMaterial.SetFloat("_PingDistance", float.MaxValue);
         playerScript = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerScript>();
         List<GameObject> playerMarkers = Util.GetDirectChildrenWithTag(transform, "PlayerMarker");
-        bool introStart = index == GameManagerScript.LEVEL_INDEX_HUB && !PlayerPrefs.HasKey(GameManagerScript.LEVEL_SAVE_KEY_PREFIX + 0);
+        bool introStart = index == GameManagerScript.LEVEL_INDEX_HUB && !PlayerPrefs.HasKey(GameManagerScript.LEVEL_SAVE_ENTER_KEY_PREFIX + 0);
         int startingIndex = introStart ? 1 : 0;
         Transform targetPlayerTransform = playerMarkers[startingIndex].transform;
         playerScript.transform.position = targetPlayerTransform.position;
         playerScript.transform.rotation = targetPlayerTransform.rotation;
-        Camera.main.transform.rotation = Quaternion.identity;
+        Camera.main.transform.localRotation = Quaternion.identity;
         GameObject startsWithPulse = Util.GetDirectChildWithTag(transform, "StartsWithPulse");
         if (startsWithPulse == null) {
             objectWithPulse = playerScript.gameObject;
@@ -58,10 +63,11 @@ public class LevelScript : MonoBehaviour
             goals.Add(goal);
         }
         GameObject.FindGameObjectWithTag("Floaters").GetComponent<FloatersScript>().Init();
-        firstRun = !PlayerPrefs.HasKey(GameManagerScript.LEVEL_SAVE_KEY_PREFIX + index);
+        firstRun = !PlayerPrefs.HasKey(GameManagerScript.LEVEL_SAVE_TIME_KEY_PREFIX + index);
     }
 
     void Update() {
+        runTime += Time.deltaTime;
         if (!started && Input.GetMouseButtonDown(0)) {
             time = 0;
             started = true;

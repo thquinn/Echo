@@ -6,7 +6,8 @@ using UnityEngine;
 
 public class GameManagerScript : MonoBehaviour
 {
-    public static string LEVEL_SAVE_KEY_PREFIX = "LevelTime_";
+    public static string LEVEL_SAVE_ENTER_KEY_PREFIX = "LevelEnter_";
+    public static string LEVEL_SAVE_TIME_KEY_PREFIX = "LevelTime_";
     static int LEVEL_INDEX_NONE = -3;
     public static int LEVEL_INDEX_INTRO = -2;
     public static int LEVEL_INDEX_HUB = -1;
@@ -24,7 +25,7 @@ public class GameManagerScript : MonoBehaviour
     int nextLevel;
 
     void Start() {
-        if (!PlayerPrefs.HasKey(LEVEL_SAVE_KEY_PREFIX + LEVEL_INDEX_INTRO)) {
+        if (!PlayerPrefs.HasKey(LEVEL_SAVE_TIME_KEY_PREFIX + LEVEL_INDEX_INTRO)) {
             LoadLevel(LEVEL_INDEX_INTRO);
         } else {
             LoadLevel(LEVEL_INDEX_HUB);
@@ -39,7 +40,7 @@ public class GameManagerScript : MonoBehaviour
             uiScript.Invoke("FadeIn", .5f);
         }
         if (currentLevel.IsDone()) {
-            string key = LEVEL_SAVE_KEY_PREFIX + currentLevel.index;
+            string key = LEVEL_SAVE_TIME_KEY_PREFIX + currentLevel.index;
             if (currentLevel.time < PlayerPrefs.GetFloat(key, float.MaxValue)) {
                 PlayerPrefs.SetFloat(key, currentLevel.time);
                 PlayerPrefs.Save();
@@ -85,15 +86,15 @@ public class GameManagerScript : MonoBehaviour
                 sconce.transform.localPosition = new Vector3(Mathf.Cos(angle) * SCONCE_DISTANCE, 0, Mathf.Sin(angle) * SCONCE_DISTANCE);
                 sconce.transform.localRotation = Quaternion.Euler(0, -angle * Mathf.Rad2Deg + 90, 0);
                 sconce.GetComponent<SconceScript>().Init(i);
-                if (PlayerPrefs.HasKey(LEVEL_SAVE_KEY_PREFIX + i)) {
-                    total += PlayerPrefs.GetFloat(LEVEL_SAVE_KEY_PREFIX + i);
+                if (PlayerPrefs.HasKey(LEVEL_SAVE_TIME_KEY_PREFIX + i)) {
+                    total += PlayerPrefs.GetFloat(LEVEL_SAVE_TIME_KEY_PREFIX + i);
                 } else {
                     allBeaten = false;
                     break;
                 }
             }
             if (allBeaten) {
-                GameObject.FindGameObjectWithTag("TotalTime").GetComponent<TextMeshPro>().text = Util.SecondsToTimeString(total);
+                currentLevel.tmpTotalTime.text = Util.SecondsToTimeString(total);
             }
         }
     }
